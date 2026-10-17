@@ -32,7 +32,7 @@ CONFIG = {
     "port": int(os.environ.get("WB_PROXY_PORT", "8080")),
     "cloud_url": os.environ.get("WB_CLOUD_URL", "https://www.workbuddy.ai/v2/chat/completions"),
     "jwt_token": os.environ.get("WB_JWT_TOKEN", ""),
-    "user_id": os.environ.get("WB_USER_ID", "256b7a9e-5c20-4a31-a94f-71f7f04380db"),
+    "user_id": os.environ.get("WB_USER_ID", ""),
     "system_prompt": os.environ.get("WB_SYSTEM_PROMPT", "You are a helpful, harmless, and honest assistant."),
     "ide_version": "5.8.4",
 }
@@ -380,41 +380,6 @@ class ProxyHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length) if content_length else b"{}"
 
-        # 记录收到的请求（调试用）
-        try:
-            import time as _t
-            _ts = _t.strftime('%H%M%S')
-            with open(rf"C:\Users\Administrator\_wb\req_body_{_ts}.json", "wb") as _f:
-                _f.write(body)
-            with open(r"C:\Users\Administrator\_wb\request_log.txt", "a", encoding="utf-8") as _f:
-                _f.write(f"\n=== {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
-                _f.write(f"Path: {self.path}\n")
-                _f.write(f"Body size: {len(body)} bytes, saved to req_body_{_ts}.json\n")
-                # 解析结构
-                try:
-                    _rd = json.loads(body)
-                    _f.write(f"Top-level keys: {list(_rd.keys())}\n")
-                    _f.write(f"Model: {_rd.get('model')}\n")
-                    _f.write(f"Stream: {_rd.get('stream')}\n")
-                    _inp = _rd.get('input', '')
-                    if isinstance(_inp, list):
-                        _f.write(f"Input messages count: {len(_inp)}\n")
-                        for _i, _m in enumerate(_inp):
-                            _role = _m.get('role', '?')
-                            _content = _m.get('content', '')
-                            _clen = len(_content) if isinstance(_content, str) else len(json.dumps(_content, ensure_ascii=False))
-                            _f.write(f"  [{_i}] role={_role}, content_len={_clen}\n")
-                    if 'tools' in _rd:
-                        _f.write(f"Tools count: {len(_rd['tools'])}\n")
-                        for _tl in _rd['tools'][:5]:
-                            _f.write(f"  - {_tl.get('name', _tl.get('function', {}).get('name', '?'))}\n")
-                    if 'instructions' in _rd:
-                        _f.write(f"Instructions length: {len(_rd['instructions'])}\n")
-                except Exception as _e:
-                    _f.write(f"Parse error: {_e}\n")
-        except:
-            pass
-
         try:
             request_data = json.loads(body)
         except json.JSONDecodeError:
@@ -504,12 +469,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 msg = err_json.get("msg", error_body[:200])
             except:
                 msg = error_body[:200]
-            # 记录上游错误
-            try:
-                with open(r"C:\Users\Administrator\_wb\request_log.txt", "a", encoding="utf-8") as _f:
-                    _f.write(f"UPSTREAM ERROR {e.code}: {error_body[:500]}\n")
-            except:
-                pass
+            # 记录上游错误到 stderr
+            print(f"[UPSTREAM ERROR {e.code}] {error_body[:300]}", file=sys.stderr)
             self._send_json(e.code, {"error": {"message": f"WorkBuddy API error ({e.code}): {msg}"}})
         except Exception as e:
             self._send_json(502, {"error": {"message": f"Proxy error: {str(e)}"}})

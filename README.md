@@ -20,7 +20,7 @@
 
 ### 方式一：下载 EXE（推荐）
 
-1. 从 [Releases](https://github.com/yourname/workbuddy-proxy/releases) 下载最新的 `workbuddy-proxy.exe`
+1. 从 [Releases](https://github.com/YuJianAn-Pro/workbuddy-proxy/releases) 下载最新的 `workbuddy-proxy.exe`
 2. 将 JWT Token 保存为 `token_live.txt`，放在 EXE 同目录
 3. 双击运行，或命令行指定端口：
 
@@ -32,7 +32,7 @@ workbuddy-proxy.exe --port 8899
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourname/workbuddy-proxy.git
+git clone https://github.com/YuJianAn-Pro/workbuddy-proxy.git
 cd workbuddy-proxy
 
 # 将 JWT Token 保存为 token_live.txt

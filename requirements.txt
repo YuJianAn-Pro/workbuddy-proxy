@@ -1,0 +1,4 @@
+# WorkBuddy AI Proxy - 依赖
+# 标准库即可运行，无需额外依赖
+# 打包时需要 PyInstaller
+pyinstaller>=6.0
